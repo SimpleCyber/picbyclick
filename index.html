@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Capture Photo</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+#camera-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+video {
+    border: 2px solid #333;
+    border-radius: 10px;
+    width: 400px;
+    height: auto;
+}
+
+    </style>
+</head>
+<body>
+    <div id="camera-container">
+        <video id="video" autoplay playsinline></video>
+    </div>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <a id="download-link" style="display:none;"></a>
+
+    <script src="script.js"></script>
+    <script>
+        // Select DOM elements
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const downloadLink = document.getElementById('download-link');
+
+// Access the user's webcam
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then((stream) => {
+        video.srcObject = stream;
+        
+        // Automatically take a photo after 3 seconds
+        setTimeout(capturePhoto, 3000);  // 3 seconds delay for photo capture
+    })
+    .catch((error) => {
+        console.error("Error accessing webcam:", error);
+        alert("Unable to access the webcam. Please check permissions.");
+    });
+
+// Function to capture photo
+function capturePhoto() {
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Draw the current video frame to the canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert the canvas content to a data URL
+    const imageUrl = canvas.toDataURL('image/png');
+
+    // Create a download link
+    downloadLink.href = imageUrl;
+    downloadLink.download = 'photo.png';
+
+    // Automatically trigger the download (on mobile devices, the user may need to confirm)
+    downloadLink.click();
+
+    // Optionally, stop the video stream after capturing the photo
+    const tracks = video.srcObject.getTracks();
+    tracks.forEach(track => track.stop()); // Stop the webcam stream
+}
+
+    </script>
+</body>
+</html>
